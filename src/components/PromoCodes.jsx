@@ -28,7 +28,7 @@ const PromoCodes = () => {
           {promoCodes?.map((promo) => (
             <div
               key={promo.id}
-              className="flex items-center justify-between p-4 border rounded-lg shadow-sm bg-white"
+              className="flex flex-col gap-2 md:flex-row md:items-center justify-between p-4 border rounded-lg shadow-sm bg-white"
             >
               <div>
                 <h2 className="text-base font-bold text-primary mb-2">
