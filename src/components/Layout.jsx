@@ -1,12 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import Logo from "./ui/logo";
 import RewardsSummary from "./RewardsSummary";
 
 import { Outlet } from "react-router-dom";
-import { Dialog } from "@radix-ui/react-dialog";
+import {
+  Dialog,
+  DialogOverlay,
+  DialogContent,
+  DialogClose,
+} from "@radix-ui/react-dialog";
 import SideBar from "./ui/SideBar";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const Layout = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   return (
     <div>
       <nav class="fixed top-0 z-50 left-0 w-full bg-white shadow-[0px_1px_2px_#D9D9D9] dark:bg-gray-800 dark:border-gray-700">
@@ -51,6 +58,7 @@ const Layout = () => {
                 data-drawer-toggle="logo-sidebar"
                 aria-controls="logo-sidebar"
                 type="button"
+                onClick={() => setMobileMenuOpen(true)}
                 class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
               >
                 <span class="sr-only">Open sidebar</span>
@@ -73,48 +81,37 @@ const Layout = () => {
           </div>
         </div>
       </nav>
-      {/* 
-      <Dialog
-        open={mobileMenuOpen}
-        onClose={setMobileMenuOpen}
-        className="lg:hidden"
-      >
-        <div className="fixed inset-0 z-50" />
-        <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
-          <div className="flex items-center justify-between">
+
+      {/* <div className="md:hidden">
+        <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <DialogOverlay className="fixed inset-0 z-50 bg-black bg-opacity-50" />
+
+          <DialogContent className="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 p-6">
             <Logo />
+            <SideBar mobileNav="true" />
             <button
               type="button"
               onClick={() => setMobileMenuOpen(false)}
-              className="-m-2.5 rounded-md p-2.5 text-gray-700"
+              className="mt-4 text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             >
-              <span className="sr-only">Close menu</span>
-              <XMarkIcon aria-hidden="true" className="h-6 w-6" />
+              Close
             </button>
-          </div>
-          <div className="mt-6 flow-root">
-            <div className="-my-6 divide-y divide-gray-500/10">
-              <div className="space-y-2 py-6">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.src}
-                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
-              <div className="py-6">
-                <Button className="text-lg font-semibold w-full h-12 rounded-full font-messina">
-                  <Link to="/get-started">Create an account</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DialogPanel>
-      </Dialog> */}
+          </DialogContent>
+        </Dialog>
+      </div> */}
 
+      <div className="md:hidden">
+        <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <DialogOverlay className="fixed inset-0 z-50 bg-black bg-opacity-50" />
+
+          <DialogContent className="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 p-6">
+            <SideBar
+              mobileNav="true"
+              setMobileMenuOpen={() => setMobileMenuOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
       <SideBar />
 
       <div class=" p-4 md:ml-64">

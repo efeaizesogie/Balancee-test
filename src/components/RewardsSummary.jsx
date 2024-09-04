@@ -11,19 +11,42 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { getCashbackHistory, getTableHeadings } from "../Data/CashBackData";
 import SelectBank from "./SelectBank";
+import { useToast } from "../hooks/use-toast";
 import { ValidateBankAccount } from "../api_requests/ValidateBankAccount";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ToastAction } from "@radix-ui/react-toast";
+import { addPromoCode } from "../Data/PromoCodeData";
+import PromoCodes from "./PromoCodes";
 
 const RewardsSummary = () => {
-  const [convertAmount, setConvertAmount] = useState();
+  const [convertAmount, setConvertAmount] = useState(0);
   const [bank, setBank] = useState("");
-  const [accountNumber, setAccountNumber] = useState();
-  const [remainingBalance, setRemainingBalance] = useState("");
-  const [bankDetails, setBankDetails] = useState([]);
-
+  const [accountName, setAccountName] = useState("");
+  const [accountNumber, setAccountNumber] = useState(0);
+  const [currentBalance, setCurrentBalance] = useState(0);
+  const [withdrawnAmount, setWithdrawnAmount] = useState(25);
+  const [remainingBalance, setRemainingBalance] = useState(0);
+  const [withdrawSuccessful, setWithdrawSucessfull] = useState(false);
+  //   const [bankDetails, setBankDetails] = useState([]);
+  const [lifetimeEarnings, setLifetimeEarnings] = useState(0);
+  const [withdrawalAmount, setWithdrawalAmount] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [allErrorMessage, setAllErrorMessage] = useState("");
   const cashbackHistory = getCashbackHistory();
   const tableHeadings = getTableHeadings();
   const today = new Date();
   const pendingThreshold = 30;
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const calculatedLifetimeEarnings = cashbackHistory.reduce(
+      (acc, curr) => acc + curr.amount,
+      0
+    );
+    setLifetimeEarnings(calculatedLifetimeEarnings);
+    const calculatedBalance = lifetimeEarnings - withdrawnAmount;
+    setCurrentBalance(calculatedBalance.toFixed(2));
+  }, [lifetimeEarnings, withdrawnAmount]);
 
   const fullBtn = "bg-[#4484a7] hover:bg-[#15587d] text-white transition-all";
   const halfBtn =
@@ -49,15 +72,6 @@ const RewardsSummary = () => {
     )
     .reduce((acc, curr) => acc + curr.amount, 0);
 
-  const lifetimeEarnings = cashbackHistory.reduce(
-    (acc, curr) => acc + curr.amount,
-    0
-  );
-
-  const withdrawnAmount = 25;
-  const currentBalance = lifetimeEarnings - withdrawnAmount;
-
-  // Determine the next payout date: Closest 1st or 15th of the month
   const getNextPayoutDate = () => {
     const nextPayout1 = new Date(today.getFullYear(), today.getMonth(), 1);
     const nextPayout15 = new Date(today.getFullYear(), today.getMonth(), 15);
@@ -75,7 +89,6 @@ const RewardsSummary = () => {
 
   const nextPayoutDate = getNextPayoutDate();
 
-  // Top earning category: Category with the highest accumulated cashback
   const categoryEarnings = cashbackHistory.reduce((acc, curr) => {
     acc[curr.category] = (acc[curr.category] || 0) + curr.amount;
     return acc;
@@ -91,10 +104,68 @@ const RewardsSummary = () => {
     setRemainingBalance(currentBalance - inputAmount);
   };
 
-  const getAccountName = () => {
-    console.log("Bank: ", bank, " Account Number ", accountNumber);
-    if (bank && accountNumber) {
-      setBankDetails(ValidateBankAccount(accountNumber, bank));
+  //   const getAccountName = () => {
+  //     console.log("Bank: ", bank, " Account Number ", accountNumber);
+  //     if (bank && accountNumber) {
+  //       setBankDetails(ValidateBankAccount(accountNumber, bank));
+  //     }
+  //   };
+
+  const handleWithdrawalAmountChange = (event) => {
+    setAllErrorMessage("");
+    setErrorMessage("");
+    const amount = parseFloat(event.target.value) || 0;
+    if (amount > currentBalance) {
+      setErrorMessage("Withdrawal amount exceeds current balance.");
+      setWithdrawalAmount(currentBalance);
+    } else {
+      setErrorMessage("");
+      setWithdrawalAmount(amount);
+    }
+  };
+
+  const handleWithdraw = () => {
+    if (bank && accountNumber && accountName && withdrawalAmount) {
+      const withdrawalInfo = {
+        bank: bank,
+        accountNumber: accountNumber,
+        accountName: accountName,
+        withdrawalAmount: withdrawalAmount,
+      };
+
+      setWithdrawSucessfull(true);
+      console.log(withdrawalInfo);
+      setAllErrorMessage("");
+
+      setCurrentBalance(currentBalance - withdrawalAmount);
+      setWithdrawnAmount(withdrawnAmount + withdrawalAmount);
+
+      toast({
+        title: "Withdrawal Successful ",
+        description: `Congratulations, $ ${withdrawalAmount} ${"  "} has been sent to your ${bank}`,
+        action: <ToastAction altText="close">Close</ToastAction>,
+      });
+    } else {
+      setAllErrorMessage("Enter all fields");
+    }
+  };
+
+  const handleConvert = () => {
+    if (convertAmount < remainingBalance) {
+      setAllErrorMessage("");
+
+      setCurrentBalance(currentBalance - convertAmount);
+      setWithdrawnAmount(withdrawnAmount + convertAmount);
+
+      toast({
+        title: "Conversion Successful ",
+        description: `Congratulations, $ ${convertAmount} ${"  "} has been successfully converted to promo code`,
+        action: <ToastAction altText="close">Close</ToastAction>,
+      });
+
+      addPromoCode(convertAmount);
+    } else {
+      setAllErrorMessage("Enter all fields");
     }
   };
 
@@ -134,7 +205,7 @@ const RewardsSummary = () => {
                     prefix="$"
                     duration={2.75}
                     decimals={2}
-                    end={currentBalance.toFixed(2)}
+                    end={currentBalance}
                   />
                 </span>
               </div>
@@ -146,7 +217,7 @@ const RewardsSummary = () => {
                     prefix="$"
                     duration={2.75}
                     decimals={2}
-                    end={"-" + withdrawnAmount.toFixed(2)}
+                    end={"-" + withdrawnAmount?.toFixed(2)}
                   />
                 </span>
               </div>
@@ -163,7 +234,7 @@ const RewardsSummary = () => {
                     prefix="$"
                     duration={2.75}
                     decimals={2}
-                    end={pendingEarnings.toFixed(2)}
+                    end={pendingEarnings?.toFixed(2)}
                   />
                 </span>
               </div>
@@ -203,76 +274,96 @@ const RewardsSummary = () => {
         />
       </Card>
 
-      <Card className="p-6 shadow-lg">
+      <Card className="mb-4 p-6 shadow-lg">
         <h2 className="text-2xl font-semibold mb-4">Cashout Options</h2>
         <div className="flex flex-col md:flex-row gap-2 md:space-x-4">
           <DialogButton
             action="Direct Cashout"
             submitAction="Withdraw"
             dialogBtnClass={fullBtn}
+            disabled={
+              withdrawalAmount > currentBalance ||
+              withdrawalAmount <= 0 ||
+              errorMessage
+            }
+            onClick={() => handleWithdraw()}
+            allErrorMessage={allErrorMessage}
             description="Withdraw your cashback directly to your bank account or as a discount on future bookings."
           >
-            <div className="grid gap-4 py-4">
-              <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">
-                    Bank
-                  </Label>
-                  <SelectBank onChange={(value) => setBank(value)} />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="username" className="text-right">
-                    Account Number
-                  </Label>
-                  <Input
-                    id="accountNumber"
-                    maxLength="10"
-                    placeholder="Enter account number"
-                    className="col-span-3 focus:outline-none focus:border-none"
-                    value={accountNumber}
-                    onChange={(event) =>
-                      setAccountNumber(parseFloat(event.target.value) || 0)
-                    }
-                  />
-                </div>
-                <div className="flex justify-end">
+            {" "}
+            <div>
+              <div className="grid gap-4 py-4">
+                <div className="flex flex-col gap-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Bank
+                    </Label>
+                    <SelectBank onChange={(value) => setBank(value)} />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="username" className="text-right">
+                      Account Number
+                    </Label>
+                    <Input
+                      id="accountNumber"
+                      maxLength="10"
+                      placeholder="Enter account number"
+                      className="col-span-3 focus:outline-none focus:border-none"
+                      onChange={(event) =>
+                        setAccountNumber(parseFloat(event.target.value) || 0)
+                      }
+                    />
+                  </div>
+                  {/* <div className="flex justify-end">
                   <Button
                     className="w-fit h-7 hover:bg-sky-700"
                     onClick={() => getAccountName()}
                   >
                     Validate
                   </Button>
+                </div> */}
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="username" className="text-right">
+                    Account Name
+                  </Label>
+                  <Input
+                    id="accountName"
+                    name="accountName"
+                    onChange={(event) => setAccountName(event.target.value)}
+                    placeholder="Enter account name"
+                    className="col-span-3 focus:outline-none focus:border-none"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="username" className="text-right">
+                    Withdrawal Amount
+                  </Label>
+                  <Input
+                    id="withdrawalAmount"
+                    onChange={handleWithdrawalAmountChange}
+                    placeholder="Enter withdrawal amount"
+                    className="col-span-3 focus:outline-none focus:border-none"
+                  />
+                  {errorMessage && (
+                    <p className="text-red-500 text-[12px] col-span-4 text-right">
+                      {errorMessage}
+                    </p>
+                  )}
                 </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="username" className="text-right">
-                  Account Name
-                </Label>
-                <Input
-                  id="accountName"
-                  name="accountName"
-                  value={bankDetails?.account_name}
-                  disabled
-                  placeholder="Enter account name"
-                  className="col-span-3 focus:outline-none focus:border-none"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="username" className="text-right">
-                  Withdrawal Amount
-                </Label>
-                <Input
-                  id="withdrawalAmount"
-                  placeholder="Enter withdrawal amount"
-                  className="col-span-3 focus:outline-none focus:border-none"
-                />
-              </div>
+              {allErrorMessage && (
+                <p className="text-red-500 text-[12px] col-span-4 text-right">
+                  {allErrorMessage}
+                </p>
+              )}
             </div>
           </DialogButton>
           <DialogButton
             action="Convert to Promo Code"
             dialogBtnClass={halfBtn}
             submitAction="Convert"
+            onClick={() => handleConvert()}
             description="Convert your cashback into promo codes. You can apply this promo code to future bookings"
           >
             <div className="relative h-[4.2rem]">
@@ -283,7 +374,6 @@ const RewardsSummary = () => {
                 <Input
                   id="onvertAmount"
                   name="convertAmount"
-                  value={convertAmount}
                   placeholder="Enter the amount you wish to convert"
                   className="col-span-3 focus:outline-none focus:border-none"
                   onChange={(event) => calculateRemainingBalance(event)}
@@ -293,9 +383,19 @@ const RewardsSummary = () => {
                 Remaining balance:{" "}
                 {remainingBalance ? remainingBalance : currentBalance}
               </p>
+
+              {allErrorMessage && (
+                <p className="text-red-500 text-[12px] col-span-4 text-right">
+                  {allErrorMessage}
+                </p>
+              )}
             </div>
           </DialogButton>
         </div>
+      </Card>
+
+      <Card className="p-6 shadow-lg">
+        <PromoCodes />
       </Card>
     </div>
   );
