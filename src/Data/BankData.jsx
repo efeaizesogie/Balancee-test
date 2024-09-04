@@ -1397,3 +1397,7 @@ export const getBankCode = (bankName) => {
   const bank = BANKDATA.find((b) => b.name === bankName);
   return bank ? bank.code : null;
 };
+
+export const getBankData = () => {
+  return BANKDATA;
+};

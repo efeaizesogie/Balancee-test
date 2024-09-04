@@ -41,7 +41,7 @@ const DialogButton = ({
               </Button>
             </DialogClose>
 
-            <Button type="submit" className="hover:bg-sky-600">
+            <Button type="submit" className="hover:bg-sky-700">
               {submitAction}
             </Button>
           </DialogFooter>

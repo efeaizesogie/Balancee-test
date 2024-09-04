@@ -10,10 +10,15 @@ import DialogButton from "./DialogButton";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { getCashbackHistory, getTableHeadings } from "../Data/CashBackData";
+import SelectBank from "./SelectBank";
+import { ValidateBankAccount } from "../api_requests/ValidateBankAccount";
 
 const RewardsSummary = () => {
   const [convertAmount, setConvertAmount] = useState();
+  const [bank, setBank] = useState("");
+  const [accountNumber, setAccountNumber] = useState();
   const [remainingBalance, setRemainingBalance] = useState("");
+  const [bankDetails, setBankDetails] = useState([]);
 
   const cashbackHistory = getCashbackHistory();
   const tableHeadings = getTableHeadings();
@@ -84,6 +89,13 @@ const RewardsSummary = () => {
     const inputAmount = parseFloat(event.target.value) || 0;
     setConvertAmount(parseFloat(event.target.value) || 0);
     setRemainingBalance(currentBalance - inputAmount);
+  };
+
+  const getAccountName = () => {
+    console.log("Bank: ", bank, " Account Number ", accountNumber);
+    if (bank && accountNumber) {
+      setBankDetails(ValidateBankAccount(accountNumber, bank));
+    }
   };
 
   return (
@@ -201,25 +213,36 @@ const RewardsSummary = () => {
             description="Withdraw your cashback directly to your bank account or as a discount on future bookings."
           >
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Bank
-                </Label>
-                <Input
-                  id="bank"
-                  placeholder="Enter bank"
-                  className="col-span-3 outline-none focus:outline-none focus:border-none"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="username" className="text-right">
-                  Account Number
-                </Label>
-                <Input
-                  id="accountNumber"
-                  placeholder="Enter account number"
-                  className="col-span-3 focus:outline-none focus:border-none"
-                />
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    Bank
+                  </Label>
+                  <SelectBank onChange={(value) => setBank(value)} />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="username" className="text-right">
+                    Account Number
+                  </Label>
+                  <Input
+                    id="accountNumber"
+                    maxLength="10"
+                    placeholder="Enter account number"
+                    className="col-span-3 focus:outline-none focus:border-none"
+                    value={accountNumber}
+                    onChange={(event) =>
+                      setAccountNumber(parseFloat(event.target.value) || 0)
+                    }
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    className="w-fit h-7 hover:bg-sky-700"
+                    onClick={() => getAccountName()}
+                  >
+                    Validate
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="username" className="text-right">
@@ -227,6 +250,9 @@ const RewardsSummary = () => {
                 </Label>
                 <Input
                   id="accountName"
+                  name="accountName"
+                  value={bankDetails?.account_name}
+                  disabled
                   placeholder="Enter account name"
                   className="col-span-3 focus:outline-none focus:border-none"
                 />
