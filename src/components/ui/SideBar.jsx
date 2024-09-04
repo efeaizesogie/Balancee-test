@@ -12,7 +12,7 @@ const SideBar = ({ mobileNav, setMobileMenuOpen }) => {
     {
       menu: "Dashboard",
       icon: <MenuIcon />,
-      link: "/dashboard",
+      link: "/",
     },
     {
       menu: "Book a Repair",
@@ -112,7 +112,7 @@ const SideBar = ({ mobileNav, setMobileMenuOpen }) => {
           style={{ color: "#d12115" }}
         />
       ),
-      link: "/",
+      link: "/logout",
     },
   ];
 

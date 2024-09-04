@@ -22,7 +22,7 @@ function App() {
           element: <RewardsSummary />,
         },
         {
-          path: "/dashboard",
+          path: "/",
           element: <ErrorPage />,
         },
         {
@@ -51,6 +51,10 @@ function App() {
         },
         {
           path: "/support",
+          element: <ErrorPage />,
+        },
+        {
+          path: "/logout",
           element: <ErrorPage />,
         },
       ],
