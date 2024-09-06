@@ -12,6 +12,17 @@ const SideBar = ({ mobileNav, setMobileMenuOpen }) => {
     {
       menu: "Dashboard",
       icon: <MenuIcon />,
+      link: "/dashboard",
+    },
+    {
+      menu: "Rewards",
+      icon: (
+        <FontAwesomeIcon
+          icon="fa-solid fa-money-bill"
+          size="xl"
+          style={{ color: "rgb(89 89 89)" }}
+        />
+      ),
       link: "/",
     },
     {
@@ -59,17 +70,7 @@ const SideBar = ({ mobileNav, setMobileMenuOpen }) => {
       ),
       link: "/repair-history",
     },
-    {
-      menu: "Rewards",
-      icon: (
-        <FontAwesomeIcon
-          icon="fa-solid fa-money-bill"
-          size="xl"
-          style={{ color: "rgb(89 89 89)" }}
-        />
-      ),
-      link: "/rewards",
-    },
+
     {
       menu: "Repair Stations",
       icon: (

@@ -16,8 +16,8 @@ const RewardTable = ({ tableHeading, tableBody }) => {
         <TableCaption>A list of your recent Cashbacks.</TableCaption>
         <TableHeader>
           <TableRow>
-            {tableHeading.map((item) => (
-              <TableHead>{item}</TableHead>
+            {tableHeading?.map((item, index) => (
+              <TableHead key={index}>{item}</TableHead>
             ))}
           </TableRow>
         </TableHeader>

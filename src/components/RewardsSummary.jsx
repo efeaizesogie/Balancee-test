@@ -17,6 +17,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ToastAction } from "@radix-ui/react-toast";
 import { addPromoCode } from "../Data/PromoCodeData";
 import PromoCodes from "./PromoCodes";
+import WithdrawalTable from "./WithdrawalTable";
 
 const RewardsSummary = () => {
   const [convertAmount, setConvertAmount] = useState(0);
@@ -36,6 +37,7 @@ const RewardsSummary = () => {
   const tableHeadings = getTableHeadings();
   const today = new Date();
   const pendingThreshold = 30;
+  const [withdrawalHistory, setWithdrawalHistory] = useState([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -112,6 +114,7 @@ const RewardsSummary = () => {
   //   };
 
   const handleWithdrawalAmountChange = (event) => {
+    calculateRemainingBalance(event);
     setAllErrorMessage("");
     setErrorMessage("");
     const amount = parseFloat(event.target.value) || 0;
@@ -126,17 +129,22 @@ const RewardsSummary = () => {
 
   const handleWithdraw = () => {
     if (bank && accountNumber && accountName && withdrawalAmount) {
+      const date = new Date().toLocaleDateString();
       const withdrawalInfo = {
+        date: date,
+        amount: withdrawalAmount,
         bank: bank,
-        accountNumber: accountNumber,
         accountName: accountName,
-        withdrawalAmount: withdrawalAmount,
+        accountNumber: accountNumber,
       };
+
+      setWithdrawalHistory([...withdrawalHistory, withdrawalInfo]);
 
       setWithdrawSucessfull(true);
       console.log(withdrawalInfo);
       setAllErrorMessage("");
 
+      setRemainingBalance(currentBalance - withdrawalAmount);
       setCurrentBalance(currentBalance - withdrawalAmount);
       setWithdrawnAmount(withdrawnAmount + withdrawalAmount);
 
@@ -145,6 +153,11 @@ const RewardsSummary = () => {
         description: `Congratulations, $ ${withdrawalAmount} ${"  "} has been sent to your ${bank}`,
         action: <ToastAction altText="close">Close</ToastAction>,
       });
+
+      setBank("");
+      setAccountNumber("");
+      setAccountName("");
+      setWithdrawalAmount(0);
     } else {
       setAllErrorMessage("Enter all fields");
     }
@@ -284,7 +297,11 @@ const RewardsSummary = () => {
             disabled={
               withdrawalAmount > currentBalance ||
               withdrawalAmount <= 0 ||
-              errorMessage
+              errorMessage ||
+              !bank ||
+              !accountNumber ||
+              !accountName ||
+              !withdrawalAmount
             }
             onClick={() => handleWithdraw()}
             allErrorMessage={allErrorMessage}
@@ -335,21 +352,28 @@ const RewardsSummary = () => {
                     className="col-span-3 focus:outline-none focus:border-none"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="username" className="text-right">
-                    Withdrawal Amount
-                  </Label>
-                  <Input
-                    id="withdrawalAmount"
-                    onChange={handleWithdrawalAmountChange}
-                    placeholder="Enter withdrawal amount"
-                    className="col-span-3 focus:outline-none focus:border-none"
-                  />
-                  {errorMessage && (
-                    <p className="text-red-500 text-[12px] col-span-4 text-right">
-                      {errorMessage}
+                <div className="relative h-[4.2rem]">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="username" className="text-right">
+                      Withdrawal Amount
+                    </Label>
+                    <Input
+                      id="withdrawalAmount"
+                      onChange={handleWithdrawalAmountChange}
+                      placeholder="Enter withdrawal amount"
+                      className="col-span-3 focus:outline-none focus:border-none"
+                    />
+
+                    <p className="absolute bottom-0 right-0 text-[12px]">
+                      Remaining balance:{" "}
+                      {remainingBalance ? remainingBalance : currentBalance}
                     </p>
-                  )}
+                    {errorMessage && (
+                      <p className="text-red-500 text-[12px] col-span-4 text-right">
+                        {errorMessage}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
               {allErrorMessage && (
@@ -394,8 +418,13 @@ const RewardsSummary = () => {
         </div>
       </Card>
 
-      <Card className="p-6 shadow-lg">
+      <Card className="mb-4 p-6 shadow-lg">
         <PromoCodes />
+      </Card>
+
+      <Card className="p-6 shadow-lg">
+        <h2 className="text-2xl font-semibold mb-4">Withdrawal History</h2>
+        <WithdrawalTable tableBody={withdrawalHistory} />
       </Card>
     </div>
   );

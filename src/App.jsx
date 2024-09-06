@@ -18,11 +18,11 @@ function App() {
       errorElement: <ErrorPage />,
       children: [
         {
-          path: "/rewards",
+          path: "/",
           element: <RewardsSummary />,
         },
         {
-          path: "/",
+          path: "/dashboard",
           element: <ErrorPage />,
         },
         {
