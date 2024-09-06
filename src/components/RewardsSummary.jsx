@@ -369,7 +369,7 @@ const RewardsSummary = () => {
                       {remainingBalance ? remainingBalance : currentBalance}
                     </p>
                     {errorMessage && (
-                      <p className="text-red-500 text-[12px] col-span-4 text-right">
+                      <p className="text-red-500 text-[12px] mt-3 col-span-4 text-right">
                         {errorMessage}
                       </p>
                     )}
@@ -377,7 +377,7 @@ const RewardsSummary = () => {
                 </div>
               </div>
               {allErrorMessage && (
-                <p className="text-red-500 text-[12px] col-span-4 text-right">
+                <p className="text-red-500 text-[12px] mt-4 col-span-4 text-right">
                   {allErrorMessage}
                 </p>
               )}
